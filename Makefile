@@ -3,37 +3,43 @@ cxx ?= g++
 
 BIN := Simulator
 
-PROJECT_DIR := ${shell pwd}
+working_dir			:= ./build
+build_dir := $(working_dir)/obj
+bin_dir := $(working_dir)/bin
 
-WORKING_DIR			:= ./build
-build_dir := $(WORKING_DIR)/build
-obj_dir := $(WORKING_DIR)/obj
-bin_dir := $(WORKING_DIR)/bin
+lvgl_dir := ./lv_port_pc_vscode/lvgl
+lv_drivers := ./lv_port_pc_vscode/lv_drivers
+LV_DRIVERS_PATH := ${lv_drivers}
 
 inc := -I./lv_port_pc_vscode
 
 ld_libs := -lSDL2 -lm
 
-cxx_srcs := $(shell find -L $(PROJECT_DIR)/src -name "*.cpp")
+cxx_srcs := $(shell find -L ./src -name "*.cpp")
+cxx_objs := $(patsubst ./src/%.cpp,$(build_dir)/%.o,$(cxx_srcs))
 
-cxx_objs := $(cxx_srcs:.cpp=.o)
+lvgl_srcs := $(shell find -L ./lv_port_pc_vscode/lvgl/src -name "*.c")
+lvgl_objs := $(patsubst ./%.c,$(build_dir)/%.o,$(lvgl_srcs))
+
+include ./lv_port_pc_vscode/lv_drivers/lv_drivers.mk
 
 all: default
 
 echo: 
-	@echo "root_path: $(PROJECT_DIR)"
-	@echo "cxx_srcs: $(cxx_srcs)"
-	@echo "cxx_objs: $(cxx_objs)"
-	@echo "cxx_compile: $(cxx_compile)"
-	@echo "build_dir: $(build_dir)"
+	@echo 'CSRCS : $(CSRCS)'
 
+$(build_dir)/%.o: ./src/%.cpp
+	@echo 'Building project file: $<'
+	@mkdir -p $(dir $@)
+	@$(cxx) $(inc) -c $< -o $@ 
 
+$(build_dir)/%.o: %.c
+	@echo 'Building project file: $<'
+	@mkdir -p $(dir $@)
+	@$(cc) $(inc) -c $< -o $@ 
 
-%.o: %.cpp
-	$(cxx_compile) -c $^ -o $@ 
-
-default: $(cxx_objs)
-	$(cxx) -o $(BIN) $(cxx_objs)
+default: $(cxx_objs) $(lvgl_objs)
+	$(cxx) -o $(BIN) $(cxx_objs) $(lvgl_objs) $(ld_libs)
 
 clean:
 	rm $(cxx_objs) $(BIN)
