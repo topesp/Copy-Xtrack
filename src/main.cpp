@@ -1,8 +1,6 @@
 #include <iostream>
 #include <unistd.h>
 
-#define USE_SDL 1
-
 #include "lvgl/lvgl.h"
 #include "lv_drv_conf.h"
 
