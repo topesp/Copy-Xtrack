@@ -6,6 +6,9 @@
 
 #include "lv_drivers/sdl/sdl.h"
 
+#include "Common/HAL/HAL.h"
+#include "App.h"
+
 extern "C" {
     LV_IMG_DECLARE(mouse_cursor_icon)
 }
@@ -23,19 +26,30 @@ int main(int argc,char **argv)
 
     hal_init();
 
+    HAL::HAL_Init();
+
+    App_Init();
+
     while (1)
     {
         lv_timer_handler();
+        HAL::HAL_Update();
         usleep( 5 * 1000);
     }
+    
     hal_deinit();
+    App_Uninit();
     return 0;
 }
 
 static void hal_init(void)
 {
-    sdl_init();
 
+#if USE_SDL
+  sdl_init();
+#else
+  // todo
+#endif
     /* mouse input device */
     static lv_indev_drv_t indev_drv_1;
     lv_indev_drv_init(&indev_drv_1);
